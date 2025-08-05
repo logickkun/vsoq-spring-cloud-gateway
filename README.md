@@ -1,6 +1,6 @@
-### vsoq-spring-authentication-server
+# vsoq-spring-authentication-server
 ## Spring cloude gateway<br>
-# Dependencies
+### Dependencies
 
 ☑ Reactive Web (spring-boot-starter-webflux)
 무엇인가?
