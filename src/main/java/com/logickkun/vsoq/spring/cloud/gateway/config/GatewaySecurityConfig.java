@@ -1,4 +1,4 @@
-package com.logickkun.vsoq.spring.cloud.config;
+package com.logickkun.vsoq.spring.cloud.gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,14 +18,25 @@ public class GatewaySecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
-                // 1) 로그인 UI와 정적 자원은 인증 없이 허용
+                // 5) CSRF 비활성화 (API 중심이면 disable 권장)
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+                // 로그인 UI와 정적 자원은 인증 없이 허용
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/login", "/assets/**").permitAll()
-                        // 2) 루트, SPA 엔트리포인트, API는 인증 필요
-                        .pathMatchers("/", "/index.html", "/css/**", "/js/**", "/api/**").authenticated()
+                        .pathMatchers(
+                                // 로그인 주소
+                                "/login",
+                                // Static resources
+                                "/index.html",
+                                "/vite.svg",
+                                "/assets/**",
+                                "/favicon.ico"
+                        ).permitAll()
+                        .pathMatchers("/", "/api/**").authenticated()
                         .anyExchange().authenticated()
                 )
-                // 3) 인증 실패 시 /login 으로 리다이렉트
+                // 인증 실패 시 /login 으로 리다이렉트
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((exchange, e) -> {
                             exchange.getResponse().setStatusCode(HttpStatus.TEMPORARY_REDIRECT);
@@ -39,8 +50,6 @@ public class GatewaySecurityConfig {
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(Customizer.withDefaults())
                 )
-                // 5) CSRF 비활성화 (API 중심이면 disable 권장)
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .build();
     }
 }

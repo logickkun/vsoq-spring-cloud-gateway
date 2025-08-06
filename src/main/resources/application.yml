@@ -1,3 +1,46 @@
 spring:
   application:
     name: spring-cloud-gateway
+
+  # Gateway Route 설정
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+          # 로그인
+          - id: auth
+            uri: http://localhost:8081
+            predicates:
+              - Path=/login, /index.html, /vite.svg, /assets/**
+
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          #  NimbusReactiveJwtDecoder bean을 생성하게 끔 임시로 주소 설정함.
+          jwk-set-uri: https://your-auth-server/.well-known/jwks.json
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+server:
+  port: 8080
+
+logging:
+  level:
+    # Gateway core
+    org.springframework.cloud.gateway: DEBUG
+    # Reactor Netty HTTP 서버/클라이언트 (실제 네트워크 레벨)
+    reactor.netty.http.server: DEBUG
+    reactor.netty.http.client: DEBUG
+    # Spring WebFlux 핸들러
+    org.springframework.web: DEBUG
+    # Security 처리
+    org.springframework.security: DEBUG
+    # (Optional) 전체 로그 TRACE
+    # ROOT: DEBUG
