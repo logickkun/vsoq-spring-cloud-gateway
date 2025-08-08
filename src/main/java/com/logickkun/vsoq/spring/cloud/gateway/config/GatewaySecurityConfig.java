@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -16,17 +15,17 @@ import java.net.URI;
 public class GatewaySecurityConfig {
 
     @Bean
-    public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain gatewaySecurityFilterChain(ServerHttpSecurity http) {
         return http
-                // 5) CSRF 비활성화 (API 중심이면 disable 권장)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
-                // 로그인 UI와 정적 자원은 인증 없이 허용
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(
-                                // 로그인 주소
+                                // 미인증 로그인 관련 주소
                                 "/login",
+                                "/auth/login",
+
                                 // Static resources
                                 "/index.html",
                                 "/vite.svg",

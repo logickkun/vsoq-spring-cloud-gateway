@@ -12,7 +12,7 @@ spring:
           - id: auth
             uri: http://localhost:8081
             predicates:
-              - Path=/login, /index.html, /vite.svg, /assets/**
+              - Path=/login, /auth/login, /index.html, /vite.svg, /assets/**
 
 
   security:
