@@ -2,25 +2,65 @@ spring:
   application:
     name: spring-cloud-gateway
 
+  # Vite 빌드 산출물 (index.html, /assets/**)
+  web:
+    resources:
+      static-locations:
+        - file:C:/video-streaming-over-quic/vsoq.react.auth/
+
+
   # Gateway Route 설정
   cloud:
     gateway:
       server:
         webflux:
+          globalcors:
+            # 프리플라이트가 라우트에 안 걸려도 처리되게
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                # ★ 운영에선 와일드카드 대신 '정확한 오리진'을 적어라
+                #    (credentials=true일 때 Access-Control-Allow-Origin: * 금지)
+
+                #  # 운영: allowedOrigins: ["https://app.example.com"]
+                # allowedOrigins: (Production 전용)
+                #   - "https://app.example.com"
+                #   - "https://admin.example.com"
+
+                # 개발 편의: 패턴 허용 (실제 응답은 Origin 에코) (Development 전용)
+                allowedOriginPatterns:
+                  - "http://localhost:*"
+
+                allowedMethods: "*"
+                allowedHeaders: "*"
+                allowCredentials: true
+                # CorsConfiguration.maxAge는 '초(long)'이다. 단위 문자열 X
+                maxAge: 3600
+
           routes:
-          # 로그인
-          - id: auth
-            uri: http://localhost:8081
+
+          # AuthZ 서버 # (API → AuthZ 라우트가 먼저 와야 함)
+          - id: authZ
+            uri: http://localhost:8082
+            order: 1
             predicates:
-              - Path=/login, /auth/login, /index.html, /vite.svg, /assets/**
+              - Path=/.well-known/**, /oauth2/**, /auth/**
+
+
+          # SPA 폴백
+          - id: spa_fallback
+            uri: forward:/index.html
+            order: 2
+            predicates:
+              - Path=/login
 
 
   security:
     oauth2:
       resourceserver:
         jwt:
-          #  NimbusReactiveJwtDecoder bean을 생성하게 끔 임시로 주소 설정함.
-          jwk-set-uri: https://your-auth-server/.well-known/jwks.json
+          # 게이트웨이에서 oauth2ResourceServer().jwt()를 켰다면, JWKS 위치가 있어야 함. 없으면 시작 시 실패.
+          jwk-set-uri: http://localhost:8082/.well-known/jwks.json
 
 eureka:
   client:
@@ -43,4 +83,4 @@ logging:
     # Security 처리
     org.springframework.security: DEBUG
     # (Optional) 전체 로그 TRACE
-    # ROOT: DEBUG
+    # ROOT: DEBUG`
