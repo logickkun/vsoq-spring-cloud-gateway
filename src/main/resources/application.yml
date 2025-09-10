@@ -8,7 +8,6 @@ spring:
       static-locations:
         - file:C:/video-streaming-over-quic/vsoq.react.auth/
 
-
   # Gateway Route 설정
   cloud:
     gateway:
@@ -34,25 +33,34 @@ spring:
                 allowedMethods: "*"
                 allowedHeaders: "*"
                 allowCredentials: true
+                exposedHeaders:
+                  - Content-Disposition
+                  - X-Request-Id
                 # CorsConfiguration.maxAge는 '초(long)'이다. 단위 문자열 X
                 maxAge: 3600
 
           routes:
+            # 1) BFF (웹/모바일/프록시 모두 여기서 시작)
+            - id: bff
+              uri: http://localhost:8079
+              order: 1
+              predicates:
+                - Path=/bff/**
 
-          # AuthZ 서버 # (API → AuthZ 라우트가 먼저 와야 함)
-          - id: authZ
-            uri: http://localhost:8082
-            order: 1
-            predicates:
-              - Path=/.well-known/**, /oauth2/**, /auth/**
+            # 2) 인증서버(AuthN) - OIDC 표준 엔드포인트
+            - id: authn
+              uri: http://localhost:9000
+              order: 2
+              predicates:
+                - Path=/oauth2/**, /connect/**, /login, /userinfo
 
 
-          # SPA 폴백
-          - id: spa_fallback
-            uri: forward:/index.html
-            order: 2
-            predicates:
-              - Path=/login
+            # SPA 폴백
+            - id: spa_fallback
+              uri: forward:/index.html
+              order: 3
+              predicates:
+                - Path=/login
 
 
   security:

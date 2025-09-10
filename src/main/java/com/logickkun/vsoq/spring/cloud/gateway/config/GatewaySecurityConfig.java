@@ -20,9 +20,8 @@ public class GatewaySecurityConfig {
     @Bean
     public SecurityWebFilterChain gatewaySecurityFilterChain(ServerHttpSecurity http) {
         return http
-                // CSRF/Basic/FormLogin은 게C이트웨이에서 사용하지 않으므로 비활성화
                 .cors(Customizer.withDefaults())
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // 게이트웨이는 프록시이므로 CSRF 비활성화
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
 
@@ -42,8 +41,8 @@ public class GatewaySecurityConfig {
                                 // OIDC/JWKS/인증플로 관련 공개 엔드포인트
                                 "/.well-known/**", "/oauth2/**",
 
-                                // AuthZ 서버로 프록시되는 인증 관련 API (로그인/리프레시/로그아웃)
-                                "/auth/login", "/auth/refresh", "/auth/logout"
+                                // BFF 로그인 시작 / 콜백
+                                "/bff/web/login","/bff/web/callback"
                         ).permitAll()
 
                         // 2) 보호 리소스: 인증 필요
