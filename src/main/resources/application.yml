@@ -52,7 +52,7 @@ spring:
               uri: http://localhost:9000
               order: 2
               predicates:
-                - Path=/oauth2/**, /connect/**, /login, /userinfo
+                - Path=/oauth2/**, /connect/**, /userinfo
 
 
             # SPA 폴백
@@ -61,14 +61,6 @@ spring:
               order: 3
               predicates:
                 - Path=/login
-
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          # 게이트웨이에서 oauth2ResourceServer().jwt()를 켰다면, JWKS 위치가 있어야 함. 없으면 시작 시 실패.
-          jwk-set-uri: http://localhost:8082/.well-known/jwks.json
 
 eureka:
   client:
