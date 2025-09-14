@@ -40,27 +40,32 @@ spring:
                 maxAge: 3600
 
           routes:
-            # 1) BFF (웹/모바일/프록시 모두 여기서 시작)
-            - id: bff
-              uri: http://localhost:8079
+            # Spring Authentication Server 로그인 폼 제공 엔드포인트 라우트
+#            - id: sas_login_form
+#              uri: http://localhost:9000
+#              uri: forward:/index.html
+#              order: 0
+#              predicates:
+#                - Path=/auth/login
+#              filters:
+#                - SetPath=/index.html
+
+            ## Spring Authentication Server 인증 엔드포인트 라우트
+            - id: authn_endpoints
+              uri: http://localhost:9000
               order: 1
               predicates:
-                - Path=/bff/**
+                - Path=/oauth2/**, /connect/**, /userinfo, /web/login, /logout
 
-            # 2) 인증서버(AuthN) - OIDC 표준 엔드포인트
-            - id: authn
-              uri: http://localhost:9000
+            # BFF WEB OIDC
+            - id: bff_web_oidc
+              uri: http://localhost:8079
               order: 2
               predicates:
-                - Path=/oauth2/**, /connect/**, /userinfo
+                - Path=/bff/web/login, /bff/web/callback
 
 
-            # SPA 폴백
-            - id: spa_fallback
-              uri: forward:/index.html
-              order: 3
-              predicates:
-                - Path=/login
+
 
 eureka:
   client:
